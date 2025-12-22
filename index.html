@@ -1,622 +1,1279 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shohoz Bazar - Shop Easy, Live Easy</title>
-    <meta name="description" content="Shohoz Bazar - Your trusted online marketplace for quality products at the best prices">
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shohoz Bazar — Shop Easy, Live Easy</title>
+  <meta name="description" content="Shohoz Bazar - Mixed online marketplace in Bangladesh. Bangla/English, BDT, bKash/Nagad/COD." />
+
+  <!-- React 18 -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body { margin: 0; padding: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    .line-clamp-2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  </style>
 </head>
-<body>
-    <div id="root"></div>
-    
-    <script type="text/babel">
-        const { useState, useEffect } = React;
-        const { ShoppingCart, Heart, User, Search, Menu, X, Star, Truck, RotateCcw, Shield, ChevronRight, Plus, Minus, MapPin, Phone, Mail, Facebook, Instagram, Twitter } = window.lucide;
 
-        // Lucide Icon Component Wrapper
-        const Icon = ({ icon: IconComponent, ...props }) => {
-            useEffect(() => {
-                window.lucide.createIcons();
-            }, []);
-            return React.createElement('i', { 
-                'data-lucide': IconComponent,
-                ...props 
-            });
+<body class="bg-gray-50">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useEffect, useMemo, useState } = React;
+
+    // -------------------------
+    // Helpers
+    // -------------------------
+    const formatBDT = (n) => `৳${Number(n || 0).toLocaleString("en-US")}`;
+    const genOrderId = () => `SB${Math.floor(100000 + Math.random() * 900000)}`;
+
+    const TRANSLATIONS = {
+      en: {
+        tagline: "Shop Easy, Live Easy",
+        heroTitle: "Welcome to Shohoz Bazar",
+        heroSubtitle: "Everything in one place, easily",
+        shopNow: "Shop Now",
+        searchPlaceholder: "Search products, brands, categories…",
+        flashSale: "Flash Sale",
+        endsIn: "Ends in",
+        topDeals: "Top Deals",
+        customersLove: "Customers Love Shohoz Bazar",
+        account: "Account",
+        wishlist: "Wishlist",
+        cart: "Cart",
+        home: "Home",
+        shop: "Shop",
+        categories: "Categories",
+        allProducts: "All Products",
+        productsFound: "products found",
+        addToCart: "Add to Cart",
+        buyNow: "Buy Now",
+        inStock: "In stock",
+        onlyLeft: "Only left",
+        delivery: "Delivery",
+        reviews: "reviews",
+        subtotal: "Subtotal",
+        deliveryFee: "Delivery Fee",
+        free: "FREE",
+        total: "Total",
+        coupon: "Coupon",
+        apply: "Apply",
+        proceedCheckout: "Proceed to Checkout",
+        continueShopping: "Continue Shopping",
+        emptyCartTitle: "Your cart is empty",
+        emptyCartSubtitle: "Add some products to get started!",
+        startShopping: "Start Shopping",
+        checkout: "Checkout",
+        address: "Delivery Address",
+        payment: "Payment Method",
+        reviewOrder: "Review Order",
+        placeOrder: "Place Order",
+        cod: "Cash on Delivery",
+        payBkash: "Pay with bKash",
+        payNagad: "Pay with Nagad",
+        name: "Full Name",
+        phone: "Phone",
+        division: "Division",
+        district: "District",
+        thana: "Thana/Upazila",
+        area: "Area",
+        roadHouse: "Road/House",
+        landmark: "Landmark (optional)",
+        note: "Note (optional)",
+        orderPlaced: "Order Placed!",
+        orderPlacedMsg: "Your order has been created successfully.",
+        trackOrder: "Track Order",
+        track: "Track",
+        orderId: "Order ID",
+        statusTimeline: "Status Timeline",
+        confirmed: "Confirmed",
+        packed: "Packed",
+        shipped: "Shipped",
+        outForDelivery: "Out for delivery",
+        delivered: "Delivered",
+        backHome: "Back to Home",
+        viewDetails: "View Details",
+        sortBy: "Sort by",
+        sortPopular: "Popular",
+        sortLowHigh: "Price: Low → High",
+        sortHighLow: "Price: High → Low",
+        filterPrice: "Price Range",
+        clear: "Clear",
+        freeShipHint: "Add more to get FREE delivery",
+        policies: "Policies",
+        quickLinks: "Quick Links",
+        about: "About",
+        contact: "Contact",
+        faq: "FAQ",
+        returnRefund: "Return & Refund",
+        privacy: "Privacy Policy",
+        terms: "Terms & Conditions",
+        support: "Support",
+      },
+      bn: {
+        tagline: "সহজে কিনুন, সহজে থাকুন",
+        heroTitle: "Shohoz Bazar এ স্বাগতম",
+        heroSubtitle: "সবকিছু এক জায়গায়, সহজে",
+        shopNow: "এখনই কিনুন",
+        searchPlaceholder: "পণ্য, ব্র্যান্ড, ক্যাটাগরি খুঁজুন…",
+        flashSale: "ফ্ল্যাশ সেল",
+        endsIn: "শেষ হবে",
+        topDeals: "সেরা অফার",
+        customersLove: "ক্রেতারা Shohoz Bazar পছন্দ করেন",
+        account: "অ্যাকাউন্ট",
+        wishlist: "ইচ্ছেতালিকা",
+        cart: "কার্ট",
+        home: "হোম",
+        shop: "শপ",
+        categories: "ক্যাটাগরি",
+        allProducts: "সব পণ্য",
+        productsFound: "টি পণ্য পাওয়া গেছে",
+        addToCart: "কার্টে যোগ করুন",
+        buyNow: "এখনই কিনুন",
+        inStock: "স্টকে আছে",
+        onlyLeft: "অবশিষ্ট",
+        delivery: "ডেলিভারি",
+        reviews: "রিভিউ",
+        subtotal: "সাবটোটাল",
+        deliveryFee: "ডেলিভারি চার্জ",
+        free: "ফ্রি",
+        total: "মোট",
+        coupon: "কুপন",
+        apply: "প্রয়োগ",
+        proceedCheckout: "চেকআউট করুন",
+        continueShopping: "শপিং চালিয়ে যান",
+        emptyCartTitle: "আপনার কার্ট খালি",
+        emptyCartSubtitle: "শুরু করতে কিছু পণ্য যোগ করুন!",
+        startShopping: "শপিং শুরু করুন",
+        checkout: "চেকআউট",
+        address: "ডেলিভারি ঠিকানা",
+        payment: "পেমেন্ট পদ্ধতি",
+        reviewOrder: "অর্ডার রিভিউ",
+        placeOrder: "অর্ডার করুন",
+        cod: "ক্যাশ অন ডেলিভারি",
+        payBkash: "bKash দিয়ে পেমেন্ট",
+        payNagad: "Nagad দিয়ে পেমেন্ট",
+        name: "নাম",
+        phone: "মোবাইল",
+        division: "বিভাগ",
+        district: "জেলা",
+        thana: "থানা/উপজেলা",
+        area: "এলাকা",
+        roadHouse: "রোড/বাড়ি",
+        landmark: "ল্যান্ডমার্ক (ঐচ্ছিক)",
+        note: "নোট (ঐচ্ছিক)",
+        orderPlaced: "অর্ডার সম্পন্ন!",
+        orderPlacedMsg: "আপনার অর্ডার সফলভাবে তৈরি হয়েছে।",
+        trackOrder: "অর্ডার ট্র্যাক করুন",
+        track: "ট্র্যাক",
+        orderId: "অর্ডার আইডি",
+        statusTimeline: "স্ট্যাটাস টাইমলাইন",
+        confirmed: "কনফার্মড",
+        packed: "প্যাকড",
+        shipped: "শিপড",
+        outForDelivery: "ডেলিভারির পথে",
+        delivered: "ডেলিভারড",
+        backHome: "হোমে ফিরে যান",
+        viewDetails: "ডিটেইলস দেখুন",
+        sortBy: "সাজান",
+        sortPopular: "জনপ্রিয়",
+        sortLowHigh: "দাম: কম → বেশি",
+        sortHighLow: "দাম: বেশি → কম",
+        filterPrice: "দামের সীমা",
+        clear: "রিসেট",
+        freeShipHint: "আর যোগ করুন ফ্রি ডেলিভারির জন্য",
+        policies: "নীতিমালা",
+        quickLinks: "লিংক",
+        about: "আমাদের সম্পর্কে",
+        contact: "যোগাযোগ",
+        faq: "প্রশ্নোত্তর",
+        returnRefund: "রিটার্ন ও রিফান্ড",
+        privacy: "প্রাইভেসি",
+        terms: "শর্তাবলী",
+        support: "সাপোর্ট",
+      }
+    };
+
+    // -------------------------
+    // App
+    // -------------------------
+    function ShohozBazarApp() {
+      const [lang, setLang] = useState("bn");
+      const t = TRANSLATIONS[lang];
+
+      const [cart, setCart] = useState([]);
+      const [wishlist, setWishlist] = useState([]);
+      const [page, setPage] = useState("home"); // home | shop | product | cart | checkout | wishlist | track
+      const [selectedProduct, setSelectedProduct] = useState(null);
+
+      const [searchQuery, setSearchQuery] = useState("");
+      const [selectedCategory, setSelectedCategory] = useState("all");
+
+      const [sort, setSort] = useState("popular");
+      const [minPrice, setMinPrice] = useState("");
+      const [maxPrice, setMaxPrice] = useState("");
+
+      const [coupon, setCoupon] = useState("");
+      const [appliedCoupon, setAppliedCoupon] = useState(null);
+
+      const [order, setOrder] = useState(null); // {id, items, total, paymentMethod, statusIndex}
+      const [trackInput, setTrackInput] = useState("");
+
+      // Demo products
+      const products = useMemo(() => ([
+        { id: 1,  name: {en:'Premium Basmati Rice 5kg', bn:'প্রিমিয়াম বাসমতি চাল ৫ কেজি'}, category: 'groceries', price: 850, oldPrice: 950, rating: 4.5, reviews: 234, image: '🌾', discount: 11, stock: 45, delivery: '1-2 days' },
+        { id: 2,  name: {en:'Cotton T-Shirt - Blue', bn:'কটন টি-শার্ট - নীল'}, category: 'fashion', price: 599, oldPrice: 799, rating: 4.3, reviews: 156, image: '👕', discount: 25, stock: 23, delivery: '2-3 days' },
+        { id: 3,  name: {en:'Wireless Earbuds', bn:'ওয়্যারলেস ইয়ারবাডস'}, category: 'electronics', price: 2499, oldPrice: 3499, rating: 4.7, reviews: 891, image: '🎧', discount: 29, stock: 12, delivery: '1-2 days' },
+        { id: 4,  name: {en:'Face Cream SPF 50', bn:'ফেস ক্রিম SPF ৫০'}, category: 'beauty', price: 450, oldPrice: 600, rating: 4.6, reviews: 445, image: '🧴', discount: 25, stock: 67, delivery: '1-2 days' },
+        { id: 5,  name: {en:'Non-Stick Cookware Set', bn:'নন-স্টিক কুকওয়্যার সেট'}, category: 'home', price: 3200, oldPrice: 4500, rating: 4.4, reviews: 203, image: '🍳', discount: 29, stock: 18, delivery: '2-3 days' },
+        { id: 6,  name: {en:'Baby Diapers Pack of 48', bn:'বেবি ডায়াপার ৪৮ পিস'}, category: 'baby', price: 890, oldPrice: 1050, rating: 4.8, reviews: 672, image: '👶', discount: 15, stock: 89, delivery: '1-2 days' },
+        { id: 7,  name: {en:'Notebook Set - 6 Pack', bn:'নোটবুক সেট - ৬ প্যাক'}, category: 'stationery', price: 280, oldPrice: 350, rating: 4.2, reviews: 89, image: '📓', discount: 20, stock: 156, delivery: '1-2 days' },
+        { id: 8,  name: {en:'Vitamin C Tablets', bn:'ভিটামিন সি ট্যাবলেট'}, category: 'health', price: 650, oldPrice: 800, rating: 4.5, reviews: 321, image: '💊', discount: 19, stock: 94, delivery: '1-2 days' },
+        { id: 9,  name: {en:'Premium Green Tea 100g', bn:'প্রিমিয়াম গ্রিন টি ১০০ গ্রাম'}, category: 'groceries', price: 420, oldPrice: 500, rating: 4.6, reviews: 287, image: '🍵', discount: 16, stock: 73, delivery: '1-2 days' },
+        { id: 10, name: {en:'Smart Watch Pro', bn:'স্মার্ট ওয়াচ প্রো'}, category: 'electronics', price: 4999, oldPrice: 6999, rating: 4.4, reviews: 567, image: '⌚', discount: 29, stock: 8, delivery: '2-3 days' },
+        { id: 11, name: {en:'Lipstick Set - 5 Colors', bn:'লিপস্টিক সেট - ৫ রঙ'}, category: 'beauty', price: 899, oldPrice: 1200, rating: 4.7, reviews: 445, image: '💄', discount: 25, stock: 34, delivery: '1-2 days' },
+        { id: 12, name: {en:'LED Desk Lamp', bn:'এলইডি ডেস্ক ল্যাম্প'}, category: 'home', price: 1250, oldPrice: 1800, rating: 4.3, reviews: 178, image: '💡', discount: 31, stock: 21, delivery: '2-3 days' },
+      ]), []);
+
+      const categories = useMemo(() => ([
+        { id: 'all',        name: {en:'All', bn:'সব'}, icon: '🛍️' },
+        { id: 'groceries',  name: {en:'Groceries', bn:'গ্রোসারি'}, icon: '🛒' },
+        { id: 'fashion',    name: {en:'Fashion', bn:'ফ্যাশন'}, icon: '👗' },
+        { id: 'electronics',name: {en:'Electronics', bn:'ইলেকট্রনিক্স'}, icon: '📱' },
+        { id: 'beauty',     name: {en:'Beauty', bn:'বিউটি'}, icon: '💅' },
+        { id: 'home',       name: {en:'Home & Kitchen', bn:'হোম & কিচেন'}, icon: '🏠' },
+        { id: 'baby',       name: {en:'Baby & Kids', bn:'বেবি & কিডস'}, icon: '🧸' },
+        { id: 'stationery', name: {en:'Stationery', bn:'স্টেশনারি'}, icon: '✏️' },
+        { id: 'health',     name: {en:'Health', bn:'হেলথ'}, icon: '🏥' },
+      ]), []);
+
+      // Cart logic
+      const addToCart = (product, qty=1) => {
+        setCart(prev => {
+          const existing = prev.find(i => i.id === product.id);
+          if (existing) {
+            return prev.map(i => i.id === product.id ? {...i, quantity: i.quantity + qty} : i);
+          }
+          return [...prev, {...product, quantity: qty}];
+        });
+      };
+
+      const removeFromCart = (productId) => setCart(prev => prev.filter(i => i.id !== productId));
+
+      const updateQuantity = (productId, change) => {
+        setCart(prev => prev
+          .map(i => i.id === productId ? {...i, quantity: i.quantity + change} : i)
+          .filter(i => i.quantity > 0)
+        );
+      };
+
+      const toggleWishlist = (product) => {
+        setWishlist(prev => {
+          const exists = prev.some(i => i.id === product.id);
+          return exists ? prev.filter(i => i.id !== product.id) : [...prev, product];
+        });
+      };
+
+      const cartTotal = useMemo(() => cart.reduce((sum, i) => sum + i.price * i.quantity, 0), [cart]);
+      const cartCount = useMemo(() => cart.reduce((sum, i) => sum + i.quantity, 0), [cart]);
+
+      // Delivery rules
+      const FREE_SHIP_THRESHOLD = 500;
+      const DELIVERY_FEE = 60;
+      const deliveryFee = cartTotal >= FREE_SHIP_THRESHOLD || cartTotal === 0 ? 0 : DELIVERY_FEE;
+
+      // Coupon rules (demo)
+      const couponDiscount = useMemo(() => {
+        if (!appliedCoupon) return 0;
+        if (appliedCoupon.code === "SB10") return Math.floor(cartTotal * 0.10);
+        if (appliedCoupon.code === "SHIPFREE") return deliveryFee; // waive delivery
+        return 0;
+      }, [appliedCoupon, cartTotal, deliveryFee]);
+
+      const grandTotal = Math.max(0, cartTotal + deliveryFee - couponDiscount);
+
+      // Filtering + sorting
+      const filteredProducts = useMemo(() => {
+        let list = [...products];
+
+        // category
+        if (selectedCategory !== "all") list = list.filter(p => p.category === selectedCategory);
+
+        // search
+        const q = (searchQuery || "").trim().toLowerCase();
+        if (q) list = list.filter(p => (p.name.en + " " + p.name.bn).toLowerCase().includes(q));
+
+        // price filter
+        const min = minPrice === "" ? null : Number(minPrice);
+        const max = maxPrice === "" ? null : Number(maxPrice);
+        if (min != null && !Number.isNaN(min)) list = list.filter(p => p.price >= min);
+        if (max != null && !Number.isNaN(max)) list = list.filter(p => p.price <= max);
+
+        // sort
+        if (sort === "lowhigh") list.sort((a,b) => a.price - b.price);
+        if (sort === "highlow") list.sort((a,b) => b.price - a.price);
+        if (sort === "popular") list.sort((a,b) => (b.reviews - a.reviews)); // simple popularity proxy
+
+        return list;
+      }, [products, selectedCategory, searchQuery, minPrice, maxPrice, sort]);
+
+      // Checkout form
+      const [checkoutData, setCheckoutData] = useState({
+        name: "", phone: "",
+        division: "", district: "", thana: "", area: "",
+        roadHouse: "", landmark: "", note: "",
+        paymentMethod: "cod", // cod | bkash | nagad
+      });
+
+      const setField = (k, v) => setCheckoutData(prev => ({...prev, [k]: v}));
+
+      const canPlaceOrder = useMemo(() => {
+        if (cart.length === 0) return false;
+        const required = ["name","phone","division","district","thana","area","roadHouse"];
+        return required.every(k => String(checkoutData[k] || "").trim().length > 0);
+      }, [cart.length, checkoutData]);
+
+      const placeOrder = () => {
+        if (!canPlaceOrder) return;
+        const newOrder = {
+          id: genOrderId(),
+          items: cart,
+          total: grandTotal,
+          paymentMethod: checkoutData.paymentMethod,
+          createdAt: new Date().toISOString(),
+          statusIndex: 1, // 1 confirmed (0 not used)
         };
+        setOrder(newOrder);
+        setCart([]);
+        setAppliedCoupon(null);
+        setCoupon("");
+        setPage("track");
+      };
 
-        const ShohozBazar = () => {
-          const [cart, setCart] = useState([]);
-          const [wishlist, setWishlist] = useState([]);
-          const [currentPage, setCurrentPage] = useState('home');
-          const [selectedProduct, setSelectedProduct] = useState(null);
-          const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-          const [searchQuery, setSearchQuery] = useState('');
-          const [selectedCategory, setSelectedCategory] = useState('all');
+      // Track simulation (demo)
+      const statusSteps = useMemo(() => ([
+        { key: "confirmed", label: t.confirmed },
+        { key: "packed", label: t.packed },
+        { key: "shipped", label: t.shipped },
+        { key: "out", label: t.outForDelivery },
+        { key: "delivered", label: t.delivered },
+      ]), [t]);
 
-          // Sample products data
-          const products = [
-            { id: 1, name: 'Premium Basmati Rice 5kg', category: 'groceries', price: 850, oldPrice: 950, rating: 4.5, reviews: 234, image: '🌾', discount: 11, stock: 45, delivery: '1-2 days' },
-            { id: 2, name: 'Cotton T-Shirt - Blue', category: 'fashion', price: 599, oldPrice: 799, rating: 4.3, reviews: 156, image: '👕', discount: 25, stock: 23, delivery: '2-3 days' },
-            { id: 3, name: 'Wireless Earbuds', category: 'electronics', price: 2499, oldPrice: 3499, rating: 4.7, reviews: 891, image: '🎧', discount: 29, stock: 12, delivery: '1-2 days' },
-            { id: 4, name: 'Face Cream SPF 50', category: 'beauty', price: 450, oldPrice: 600, rating: 4.6, reviews: 445, image: '🧴', discount: 25, stock: 67, delivery: '1-2 days' },
-            { id: 5, name: 'Non-Stick Cookware Set', category: 'home', price: 3200, oldPrice: 4500, rating: 4.4, reviews: 203, image: '🍳', discount: 29, stock: 18, delivery: '2-3 days' },
-            { id: 6, name: 'Baby Diapers Pack of 48', category: 'baby', price: 890, oldPrice: 1050, rating: 4.8, reviews: 672, image: '👶', discount: 15, stock: 89, delivery: '1-2 days' },
-            { id: 7, name: 'Notebook Set - 6 Pack', category: 'stationery', price: 280, oldPrice: 350, rating: 4.2, reviews: 89, image: '📓', discount: 20, stock: 156, delivery: '1-2 days' },
-            { id: 8, name: 'Vitamin C Tablets', category: 'health', price: 650, oldPrice: 800, rating: 4.5, reviews: 321, image: '💊', discount: 19, stock: 94, delivery: '1-2 days' },
-            { id: 9, name: 'Premium Green Tea 100g', category: 'groceries', price: 420, oldPrice: 500, rating: 4.6, reviews: 287, image: '🍵', discount: 16, stock: 73, delivery: '1-2 days' },
-            { id: 10, name: 'Smart Watch Pro', category: 'electronics', price: 4999, oldPrice: 6999, rating: 4.4, reviews: 567, image: '⌚', discount: 29, stock: 8, delivery: '2-3 days' },
-            { id: 11, name: 'Lipstick Set - 5 Colors', category: 'beauty', price: 899, oldPrice: 1200, rating: 4.7, reviews: 445, image: '💄', discount: 25, stock: 34, delivery: '1-2 days' },
-            { id: 12, name: 'LED Desk Lamp', category: 'home', price: 1250, oldPrice: 1800, rating: 4.3, reviews: 178, image: '💡', discount: 31, stock: 21, delivery: '2-3 days' },
-          ];
+      const bumpStatus = () => {
+        setOrder(prev => {
+          if (!prev) return prev;
+          const next = Math.min(prev.statusIndex + 1, statusSteps.length);
+          return {...prev, statusIndex: next};
+        });
+      };
 
-          const categories = [
-            { id: 'all', name: 'All', icon: '🛍️' },
-            { id: 'groceries', name: 'Groceries', icon: '🛒' },
-            { id: 'fashion', name: 'Fashion', icon: '👗' },
-            { id: 'electronics', name: 'Electronics', icon: '📱' },
-            { id: 'beauty', name: 'Beauty', icon: '💅' },
-            { id: 'home', name: 'Home & Kitchen', icon: '🏠' },
-            { id: 'baby', name: 'Baby & Kids', icon: '🧸' },
-            { id: 'stationery', name: 'Stationery', icon: '✏️' },
-            { id: 'health', name: 'Health', icon: '🏥' },
-          ];
+      const goProduct = (p) => { setSelectedProduct(p); setPage("product"); };
 
-          const addToCart = (product) => {
-            const existing = cart.find(item => item.id === product.id);
-            if (existing) {
-              setCart(cart.map(item => 
-                item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-              ));
-            } else {
-              setCart([...cart, { ...product, quantity: 1 }]);
-            }
-          };
+      // Coupon apply
+      const applyCoupon = () => {
+        const code = (coupon || "").trim().toUpperCase();
+        if (!code) return;
+        if (code === "SB10" || code === "SHIPFREE") {
+          setAppliedCoupon({ code });
+        } else {
+          setAppliedCoupon({ code: "INVALID" });
+        }
+      };
 
-          const removeFromCart = (productId) => {
-            setCart(cart.filter(item => item.id !== productId));
-          };
+      const clearFilters = () => {
+        setSort("popular");
+        setMinPrice("");
+        setMaxPrice("");
+        setSearchQuery("");
+        setSelectedCategory("all");
+      };
 
-          const updateQuantity = (productId, change) => {
-            setCart(cart.map(item => {
-              if (item.id === productId) {
-                const newQuantity = item.quantity + change;
-                return newQuantity > 0 ? { ...item, quantity: newQuantity } : item;
-              }
-              return item;
-            }).filter(item => item.quantity > 0));
-          };
+      // -------------------------
+      // UI Components
+      // -------------------------
+      const ProductCard = ({ product }) => {
+        const isWished = wishlist.some(w => w.id === product.id);
+        return (
+          <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition overflow-hidden">
+            <div
+              className="relative aspect-square bg-gray-100 flex items-center justify-center text-6xl cursor-pointer"
+              onClick={() => goProduct(product)}
+            >
+              {product.image}
+              {product.discount > 0 && (
+                <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-lg text-xs font-bold">
+                  -{product.discount}%
+                </div>
+              )}
+              <button
+                onClick={(e) => { e.stopPropagation(); toggleWishlist(product); }}
+                className="absolute top-2 right-2 p-2 bg-white/90 rounded-full shadow hover:bg-white"
+                aria-label="wishlist"
+              >
+                <span className={isWished ? "text-red-500" : ""}>{isWished ? "❤️" : "🤍"}</span>
+              </button>
+            </div>
 
-          const toggleWishlist = (product) => {
-            if (wishlist.find(item => item.id === product.id)) {
-              setWishlist(wishlist.filter(item => item.id !== product.id));
-            } else {
-              setWishlist([...wishlist, product]);
-            }
-          };
+            <div className="p-4">
+              <div className="flex items-start justify-between gap-2">
+                <h3
+                  className="font-semibold text-sm line-clamp-2 cursor-pointer hover:text-emerald-600"
+                  onClick={() => goProduct(product)}
+                >
+                  {product.name[lang]}
+                </h3>
+              </div>
 
-          const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-          const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+              <div className="flex items-center gap-1 mt-2">
+                <span>⭐</span>
+                <span className="text-sm font-semibold">{product.rating}</span>
+                <span className="text-xs text-gray-500">({product.reviews} {t.reviews})</span>
+              </div>
 
-          const filteredProducts = products.filter(product => {
-            const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
-            const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
-            return matchesCategory && matchesSearch;
-          });
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-lg font-bold text-emerald-600">{formatBDT(product.price)}</span>
+                {product.oldPrice && (
+                  <span className="text-sm text-gray-400 line-through">{formatBDT(product.oldPrice)}</span>
+                )}
+              </div>
 
+              <div className="text-xs text-gray-600 mt-2">
+                🚚 {t.delivery}: {product.delivery}
+              </div>
+
+              {product.stock < 20 && (
+                <div className="text-xs text-red-600 mt-2">⚠️ {t.onlyLeft}: {product.stock}</div>
+              )}
+
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => addToCart(product, 1)}
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg font-semibold"
+                >
+                  {t.addToCart}
+                </button>
+                <button
+                  onClick={() => { addToCart(product, 1); setPage("cart"); }}
+                  className="w-full border border-gray-300 hover:border-emerald-600 py-2 rounded-lg font-semibold"
+                >
+                  {t.viewDetails}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      const Header = () => (
+        <header className="sticky top-0 z-50 bg-white shadow-sm">
+          <div className="bg-emerald-600 text-white py-2 px-4 text-sm text-center">
+            🎉 Flash Sale | Free Delivery on orders above {formatBDT(FREE_SHIP_THRESHOLD)} | bKash/Nagad/COD
+          </div>
+
+          <div className="container mx-auto px-4 py-3">
+            <div className="flex items-center justify-between gap-4">
+              <div
+                className="flex items-center gap-2 cursor-pointer"
+                onClick={() => { setPage("home"); setSelectedProduct(null); }}
+              >
+                <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white text-xl font-bold">S</div>
+                <div>
+                  <div className="font-extrabold text-lg text-emerald-700">Shohoz Bazar</div>
+                  <div className="text-xs text-gray-500 hidden sm:block">{t.tagline}</div>
+                </div>
+              </div>
+
+              <div className="flex-1 max-w-2xl hidden md:block">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder={t.searchPlaceholder}
+                    className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none"
+                    value={searchQuery}
+                    onChange={(e) => { setSearchQuery(e.target.value); setPage("shop"); }}
+                  />
+                  <span className="absolute right-4 top-3.5 text-gray-400">🔍</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100"
+                  onClick={() => alert("Demo: account page can be added next")}
+                >
+                  <span>👤</span><span className="text-sm">{t.account}</span>
+                </button>
+
+                <button
+                  className="px-3 py-2 rounded-lg hover:bg-gray-100"
+                  onClick={() => setLang(prev => prev === "bn" ? "en" : "bn")}
+                  title="Toggle language"
+                >
+                  <span className="text-sm font-semibold">{lang === "bn" ? "EN" : "BN"}</span>
+                </button>
+
+                <button className="relative px-3 py-2 rounded-lg hover:bg-gray-100" onClick={() => setPage("wishlist")}>
+                  <span className="text-xl">❤️</span>
+                  {wishlist.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                      {wishlist.length}
+                    </span>
+                  )}
+                </button>
+
+                <button className="relative px-3 py-2 rounded-lg hover:bg-gray-100" onClick={() => setPage("cart")}>
+                  <span className="text-xl">🛒</span>
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-emerald-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                      {cartCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-3 md:hidden">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder={t.searchPlaceholder}
+                  className="w-full px-4 py-2 pr-10 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none"
+                  value={searchQuery}
+                  onChange={(e) => { setSearchQuery(e.target.value); setPage("shop"); }}
+                />
+                <span className="absolute right-3 top-2.5 text-gray-400">🔍</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t overflow-x-auto">
+            <div className="container mx-auto px-4">
+              <div className="flex gap-3 py-3 whitespace-nowrap">
+                {categories.map(cat => (
+                  <button
+                    key={cat.id}
+                    onClick={() => { setSelectedCategory(cat.id); setPage("shop"); }}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full transition ${
+                      selectedCategory === cat.id ? "bg-emerald-600 text-white" : "bg-gray-100 hover:bg-gray-200"
+                    }`}
+                  >
+                    <span>{cat.icon}</span>
+                    <span className="text-sm font-semibold">{cat.name[lang]}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </header>
+      );
+
+      const Footer = () => (
+        <footer className="bg-gray-900 text-white mt-16">
+          <div className="container mx-auto px-4 py-12">
+            <div className="grid md:grid-cols-4 gap-8">
+              <div>
+                <h3 className="font-bold text-lg mb-4">Shohoz Bazar</h3>
+                <p className="text-gray-400 text-sm mb-4">
+                  Mixed online marketplace for Bangladesh — fast browsing, easy checkout.
+                </p>
+                <div className="flex gap-2 text-sm">
+                  <span className="px-2 py-1 rounded bg-emerald-700">bKash</span>
+                  <span className="px-2 py-1 rounded bg-orange-600">Nagad</span>
+                  <span className="px-2 py-1 rounded bg-gray-700">COD</span>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-bold text-lg mb-4">{t.quickLinks}</h3>
+                <ul className="space-y-2 text-sm text-gray-400">
+                  <li className="hover:text-white cursor-pointer">{t.about}</li>
+                  <li className="hover:text-white cursor-pointer">{t.contact}</li>
+                  <li className="hover:text-white cursor-pointer">{t.faq}</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="font-bold text-lg mb-4">{t.policies}</h3>
+                <ul className="space-y-2 text-sm text-gray-400">
+                  <li className="hover:text-white cursor-pointer">{t.returnRefund}</li>
+                  <li className="hover:text-white cursor-pointer">{t.privacy}</li>
+                  <li className="hover:text-white cursor-pointer">{t.terms}</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="font-bold text-lg mb-4">{t.support}</h3>
+                <ul className="space-y-2 text-sm text-gray-400">
+                  <li>📞 +880 1234-567890</li>
+                  <li>📧 support@shohozbazar.com</li>
+                  <li>📍 Dhaka, Bangladesh</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
+              <p>© 2025 Shohoz Bazar. All rights reserved.</p>
+            </div>
+          </div>
+        </footer>
+      );
+
+      const MobileBottomNav = () => (
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg md:hidden z-50">
+          <div className="grid grid-cols-4 gap-1 p-2">
+            {[
+              { icon: '🏠', label: t.home, page: 'home' },
+              { icon: '🛍️', label: t.shop, page: 'shop' },
+              { icon: '❤️', label: t.wishlist, page: 'wishlist', badge: wishlist.length },
+              { icon: '🛒', label: t.cart, page: 'cart', badge: cartCount },
+            ].map((item, i) => (
+              <button key={i} onClick={() => setPage(item.page)} className="flex flex-col items-center gap-1 py-2 relative">
+                <span className="text-xl">{item.icon}</span>
+                <span className="text-xs">{item.label}</span>
+                {item.badge > 0 && (
+                  <span className="absolute top-1 right-2 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
+                    {item.badge}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+
+      // -------------------------
+      // Pages
+      // -------------------------
+      const HomePage = () => (
+        <div>
+          <div className="bg-gradient-to-r from-emerald-500 to-emerald-700 text-white py-16 px-4">
+            <div className="container mx-auto text-center">
+              <h1 className="text-4xl md:text-5xl font-extrabold mb-4">{t.heroTitle}</h1>
+              <p className="text-xl mb-8">{t.heroSubtitle}</p>
+              <button
+                onClick={() => setPage("shop")}
+                className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-xl text-lg font-bold transition"
+              >
+                {t.shopNow}
+              </button>
+            </div>
+          </div>
+
+          <div className="container mx-auto px-4 py-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { icon: "🚚", title: "Fast Delivery", sub: "1-2 days delivery" },
+                { icon: "↩️", title: "Easy Returns", sub: "7 days return policy" },
+                { icon: "🛡️", title: "Trusted", sub: "Quality checked products" },
+                { icon: "💵", title: "Cash on Delivery", sub: "Pay when you receive" },
+              ].map((b, i) => (
+                <div key={i} className="bg-white p-6 rounded-xl shadow-sm text-center">
+                  <div className="text-5xl mb-3">{b.icon}</div>
+                  <h3 className="font-semibold mb-1">{b.title}</h3>
+                  <p className="text-sm text-gray-600">{b.sub}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-orange-400 to-red-500 text-white py-8 px-4 mb-8">
+            <div className="container mx-auto">
+              <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
+                <h2 className="text-3xl font-extrabold">⚡ {t.flashSale}</h2>
+                <div className="bg-white text-red-500 px-4 py-2 rounded-xl font-extrabold">
+                  {t.endsIn}: 5h 23m
+                </div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {products.filter(p => p.discount >= 25).slice(0, 4).map(p => (
+                  <ProductCard key={p.id} product={p} />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="container mx-auto px-4 mb-12">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-3xl font-extrabold">🔥 {t.topDeals}</h2>
+              <button className="text-emerald-700 font-semibold hover:underline" onClick={() => setPage("shop")}>
+                {t.shop} →
+              </button>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {products.slice(0, 6).map(p => <ProductCard key={p.id} product={p} />)}
+            </div>
+          </div>
+
+          <div className="container mx-auto px-4 py-12">
+            <h2 className="text-3xl font-extrabold text-center mb-8">❤️ {t.customersLove}</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              {[
+                { name: 'Rahim Ahmed', rating: 5, text: 'Amazing service! Got my order within 24 hours.' },
+                { name: 'Sadia Khan', rating: 5, text: 'Best prices and authentic products. Highly recommend!' },
+                { name: 'Karim Hassan', rating: 5, text: 'Easy returns and great customer support. Love it!' },
+              ].map((r, i) => (
+                <div key={i} className="bg-white p-6 rounded-xl shadow-sm">
+                  <div className="flex gap-1 mb-3 text-2xl">{'⭐'.repeat(r.rating)}</div>
+                  <p className="text-gray-700 mb-3">"{r.text}"</p>
+                  <p className="font-semibold">{r.name}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+
+      const ShopPage = () => (
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 mb-6">
+            <div>
+              <h1 className="text-3xl font-extrabold mb-1">
+                {selectedCategory === "all" ? t.allProducts : (categories.find(c => c.id === selectedCategory)?.name[lang] || t.allProducts)}
+              </h1>
+              <p className="text-gray-600">
+                {filteredProducts.length} {t.productsFound}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-3 items-center">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">{t.sortBy}</span>
+                <select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value)}
+                  className="border rounded-lg px-3 py-2 bg-white"
+                >
+                  <option value="popular">{t.sortPopular}</option>
+                  <option value="lowhigh">{t.sortLowHigh}</option>
+                  <option value="highlow">{t.sortHighLow}</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">{t.filterPrice}</span>
+                <input
+                  type="number"
+                  value={minPrice}
+                  onChange={(e) => setMinPrice(e.target.value)}
+                  placeholder="min"
+                  className="w-24 border rounded-lg px-3 py-2"
+                />
+                <input
+                  type="number"
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(e.target.value)}
+                  placeholder="max"
+                  className="w-24 border rounded-lg px-3 py-2"
+                />
+              </div>
+
+              <button
+                onClick={clearFilters}
+                className="px-4 py-2 rounded-lg border hover:border-emerald-600 font-semibold"
+              >
+                {t.clear}
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {filteredProducts.map(p => <ProductCard key={p.id} product={p} />)}
+          </div>
+        </div>
+      );
+
+      const ProductPage = () => {
+        const p = selectedProduct;
+        if (!p) {
           return (
-            <div className="min-h-screen bg-gray-50">
-              {/* Simple implementation without lucide icons for now */}
-              <header className="sticky top-0 z-50 bg-white shadow-md">
-                <div className="bg-emerald-600 text-white py-2 px-4 text-sm text-center">
-                  🎉 Flash Sale! Up to 50% OFF on selected items | Free Delivery on orders above ৳500
-                </div>
-                
-                <div className="container mx-auto px-4 py-3">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-2 cursor-pointer" onClick={() => setCurrentPage('home')}>
-                      <div className="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center text-white text-xl font-bold">
-                        S
-                      </div>
-                      <div>
-                        <div className="font-bold text-lg text-emerald-600">Shohoz Bazar</div>
-                        <div className="text-xs text-gray-500 hidden sm:block">Shop Easy, Live Easy</div>
-                      </div>
-                    </div>
+            <div className="container mx-auto px-4 py-12 text-center">
+              <div className="text-6xl mb-4">😅</div>
+              <p className="font-semibold">No product selected.</p>
+              <button className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold"
+                onClick={() => setPage("shop")}
+              >
+                {t.shop}
+              </button>
+            </div>
+          );
+        }
 
-                    <div className="flex-1 max-w-2xl hidden md:block">
-                      <div className="relative">
-                        <input
-                          type="text"
-                          placeholder="Search products, brands, categories..."
-                          className="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-lg focus:border-emerald-500 focus:outline-none"
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                        <span className="absolute right-4 top-3.5 text-gray-400">🔍</span>
-                      </div>
-                    </div>
+        const isWished = wishlist.some(w => w.id === p.id);
 
-                    <div className="flex items-center gap-4">
-                      <button className="hidden md:flex items-center gap-2 hover:text-emerald-600">
-                        <span>👤</span>
-                        <span className="text-sm">Account</span>
-                      </button>
-                      
-                      <button 
-                        className="relative hover:text-emerald-600"
-                        onClick={() => setCurrentPage('wishlist')}
-                      >
-                        <span className="text-2xl">❤️</span>
-                        {wishlist.length > 0 && (
-                          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                            {wishlist.length}
-                          </span>
-                        )}
-                      </button>
-                      
-                      <button 
-                        className="relative hover:text-emerald-600"
-                        onClick={() => setCurrentPage('cart')}
-                      >
-                        <span className="text-2xl">🛒</span>
-                        {cartCount > 0 && (
-                          <span className="absolute -top-2 -right-2 bg-emerald-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                            {cartCount}
-                          </span>
-                        )}
-                      </button>
-                    </div>
-                  </div>
+        return (
+          <div className="container mx-auto px-4 py-8">
+            <button className="mb-4 text-emerald-700 font-semibold hover:underline" onClick={() => setPage("shop")}>
+              ← {t.shop}
+            </button>
 
-                  <div className="mt-3 md:hidden">
-                    <div className="relative">
-                      <input
-                        type="text"
-                        placeholder="Search products..."
-                        className="w-full px-4 py-2 pr-10 border-2 border-gray-200 rounded-lg focus:border-emerald-500 focus:outline-none"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                      />
-                      <span className="absolute right-3 top-2.5 text-gray-400">🔍</span>
-                    </div>
-                  </div>
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="bg-white rounded-2xl shadow-sm p-8 flex items-center justify-center text-8xl">
+                {p.image}
+              </div>
+
+              <div className="bg-white rounded-2xl shadow-sm p-6">
+                <div className="flex items-start justify-between gap-3">
+                  <h1 className="text-2xl md:text-3xl font-extrabold">{p.name[lang]}</h1>
+                  <button
+                    onClick={() => toggleWishlist(p)}
+                    className="px-3 py-2 rounded-xl border hover:border-emerald-600"
+                    title="Wishlist"
+                  >
+                    {isWished ? "❤️" : "🤍"}
+                  </button>
                 </div>
 
-                <div className="border-t overflow-x-auto">
-                  <div className="container mx-auto px-4">
-                    <div className="flex gap-4 py-3 whitespace-nowrap">
-                      {categories.map(cat => (
-                        <button
-                          key={cat.id}
-                          onClick={() => {
-                            setSelectedCategory(cat.id);
-                            setCurrentPage('shop');
-                          }}
-                          className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${
-                            selectedCategory === cat.id 
-                              ? 'bg-emerald-600 text-white' 
-                              : 'bg-gray-100 hover:bg-gray-200'
-                          }`}
-                        >
-                          <span>{cat.icon}</span>
-                          <span className="text-sm font-medium">{cat.name}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                <div className="flex items-center gap-2 mt-3">
+                  <span>⭐</span>
+                  <span className="font-semibold">{p.rating}</span>
+                  <span className="text-sm text-gray-500">({p.reviews} {t.reviews})</span>
                 </div>
-              </header>
 
-              <main className="min-h-screen pb-20 md:pb-0">
-                {currentPage === 'home' && (
-                  <div>
-                    {/* Hero Section */}
-                    <div className="bg-gradient-to-r from-emerald-500 to-emerald-700 text-white py-16 px-4">
-                      <div className="container mx-auto text-center">
-                        <h1 className="text-4xl md:text-5xl font-bold mb-4">Welcome to Shohoz Bazar</h1>
-                        <p className="text-xl mb-8">সবকিছু এক জায়গায়, সহজে</p>
-                        <button 
-                          onClick={() => setCurrentPage('shop')}
-                          className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-lg text-lg font-semibold transition-colors"
-                        >
-                          Shop Now
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Trust Badges */}
-                    <div className="container mx-auto px-4 py-8">
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="bg-white p-6 rounded-lg shadow-sm text-center">
-                          <div className="text-5xl mb-3">🚚</div>
-                          <h3 className="font-semibold mb-1">Fast Delivery</h3>
-                          <p className="text-sm text-gray-600">1-2 days delivery</p>
-                        </div>
-                        <div className="bg-white p-6 rounded-lg shadow-sm text-center">
-                          <div className="text-5xl mb-3">↩️</div>
-                          <h3 className="font-semibold mb-1">Easy Returns</h3>
-                          <p className="text-sm text-gray-600">7 days return policy</p>
-                        </div>
-                        <div className="bg-white p-6 rounded-lg shadow-sm text-center">
-                          <div className="text-5xl mb-3">🛡️</div>
-                          <h3 className="font-semibold mb-1">100% Authentic</h3>
-                          <p className="text-sm text-gray-600">Original products</p>
-                        </div>
-                        <div className="bg-white p-6 rounded-lg shadow-sm text-center">
-                          <div className="text-5xl mb-3">💵</div>
-                          <h3 className="font-semibold mb-1">Cash on Delivery</h3>
-                          <p className="text-sm text-gray-600">Pay when you receive</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Flash Sale */}
-                    <div className="bg-gradient-to-r from-orange-400 to-red-500 text-white py-8 px-4 mb-8">
-                      <div className="container mx-auto">
-                        <div className="flex items-center justify-between mb-6">
-                          <h2 className="text-3xl font-bold">⚡ Flash Sale</h2>
-                          <div className="bg-white text-red-500 px-4 py-2 rounded-lg font-bold">
-                            Ends in: 5h 23m
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          {products.filter(p => p.discount >= 25).slice(0, 4).map(product => (
-                            <ProductCard key={product.id} product={product} />
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Top Deals */}
-                    <div className="container mx-auto px-4 mb-12">
-                      <h2 className="text-3xl font-bold mb-6">🔥 Top Deals</h2>
-                      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                        {products.slice(0, 6).map(product => (
-                          <ProductCard key={product.id} product={product} />
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Social Proof */}
-                    <div className="container mx-auto px-4 py-12">
-                      <h2 className="text-3xl font-bold text-center mb-8">❤️ Customers Love Shohoz Bazar</h2>
-                      <div className="grid md:grid-cols-3 gap-6">
-                        {[
-                          { name: 'Rahim Ahmed', rating: 5, text: 'Amazing service! Got my order within 24 hours.' },
-                          { name: 'Sadia Khan', rating: 5, text: 'Best prices and authentic products. Highly recommend!' },
-                          { name: 'Karim Hassan', rating: 5, text: 'Easy returns and great customer support. Love it!' },
-                        ].map((review, i) => (
-                          <div key={i} className="bg-white p-6 rounded-lg shadow-md">
-                            <div className="flex gap-1 mb-3 text-2xl">
-                              {'⭐'.repeat(review.rating)}
-                            </div>
-                            <p className="text-gray-700 mb-3">"{review.text}"</p>
-                            <p className="font-semibold">{review.name}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {currentPage === 'shop' && (
-                  <div className="container mx-auto px-4 py-8">
-                    <div className="mb-6">
-                      <h1 className="text-3xl font-bold mb-2">
-                        {selectedCategory === 'all' ? 'All Products' : categories.find(c => c.id === selectedCategory)?.name}
-                      </h1>
-                      <p className="text-gray-600">{filteredProducts.length} products found</p>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                      {filteredProducts.map(product => (
-                        <ProductCard key={product.id} product={product} />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {currentPage === 'cart' && (
-                  <div className="container mx-auto px-4 py-8">
-                    <h1 className="text-3xl font-bold mb-8">Shopping Cart ({cartCount} items)</h1>
-
-                    {cart.length === 0 ? (
-                      <div className="text-center py-16">
-                        <div className="text-8xl mb-4">🛒</div>
-                        <h2 className="text-2xl font-semibold mb-2">Your cart is empty</h2>
-                        <p className="text-gray-600 mb-6">Add some products to get started!</p>
-                        <button
-                          onClick={() => setCurrentPage('shop')}
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-lg font-semibold"
-                        >
-                          Start Shopping
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="grid lg:grid-cols-3 gap-8">
-                        <div className="lg:col-span-2 space-y-4">
-                          {cart.map(item => (
-                            <div key={item.id} className="bg-white rounded-lg shadow-md p-4 flex gap-4">
-                              <div className="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center text-4xl flex-shrink-0">
-                                {item.image}
-                              </div>
-                              
-                              <div className="flex-1">
-                                <h3 className="font-semibold mb-2">{item.name}</h3>
-                                <div className="flex items-center gap-2 mb-2">
-                                  <span className="text-lg font-bold text-emerald-600">৳{item.price}</span>
-                                  {item.oldPrice && (
-                                    <span className="text-sm text-gray-400 line-through">৳{item.oldPrice}</span>
-                                  )}
-                                </div>
-                              </div>
-
-                              <div className="flex flex-col items-end justify-between">
-                                <button
-                                  onClick={() => removeFromCart(item.id)}
-                                  className="text-red-500 hover:text-red-700 text-xl"
-                                >
-                                  ✕
-                                </button>
-                                
-                                <div className="flex items-center gap-2 border rounded-lg">
-                                  <button
-                                    onClick={() => updateQuantity(item.id, -1)}
-                                    className="p-2 hover:bg-gray-100"
-                                  >
-                                    −
-                                  </button>
-                                  <span className="px-4 font-semibold">{item.quantity}</span>
-                                  <button
-                                    onClick={() => updateQuantity(item.id, 1)}
-                                    className="p-2 hover:bg-gray-100"
-                                  >
-                                    +
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-
-                        <div className="lg:col-span-1">
-                          <div className="bg-white rounded-lg shadow-md p-6 sticky top-24">
-                            <h2 className="text-xl font-bold mb-4">Order Summary</h2>
-                            
-                            <div className="space-y-3 mb-4">
-                              <div className="flex justify-between">
-                                <span>Subtotal</span>
-                                <span className="font-semibold">৳{cartTotal}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span>Delivery</span>
-                                <span className="font-semibold">{cartTotal >= 500 ? 'FREE' : '৳60'}</span>
-                              </div>
-                              {cartTotal < 500 && (
-                                <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-sm">
-                                  💰 Add ৳{500 - cartTotal} more for FREE delivery!
-                                </div>
-                              )}
-                            </div>
-                            
-                            <div className="border-t pt-4 mb-6">
-                              <div className="flex justify-between text-lg font-bold">
-                                <span>Total</span>
-                                <span className="text-emerald-600">৳{cartTotal < 500 ? cartTotal + 60 : cartTotal}</span>
-                              </div>
-                            </div>
-
-                            <button
-                              onClick={() => setCurrentPage('checkout')}
-                              className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-bold text-lg transition-colors mb-3"
-                            >
-                              Proceed to Checkout
-                            </button>
-                            
-                            <button
-                              onClick={() => setCurrentPage('shop')}
-                              className="w-full border-2 border-gray-300 hover:border-emerald-600 text-gray-700 py-3 rounded-lg font-semibold transition-colors"
-                            >
-                              Continue Shopping
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {currentPage === 'wishlist' && (
-                  <div className="container mx-auto px-4 py-8">
-                    <h1 className="text-3xl font-bold mb-8">My Wishlist ({wishlist.length} items)</h1>
-
-                    {wishlist.length === 0 ? (
-                      <div className="text-center py-16">
-                        <div className="text-8xl mb-4">❤️</div>
-                        <h2 className="text-2xl font-semibold mb-2">Your wishlist is empty</h2>
-                        <p className="text-gray-600 mb-6">Save your favorite items here!</p>
-                        <button
-                          onClick={() => setCurrentPage('shop')}
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-lg font-semibold"
-                        >
-                          Start Shopping
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                        {wishlist.map(product => (
-                          <ProductCard key={product.id} product={product} />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {currentPage === 'checkout' && (
-                  <div className="container mx-auto px-4 py-8">
-                    <h1 className="text-3xl font-bold mb-8">Checkout</h1>
-                    <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-8 text-center">
-                      <div className="text-6xl mb-4">🎉</div>
-                      <h2 className="text-2xl font-bold mb-4">Order Placed Successfully!</h2>
-                      <p className="text-gray-600 mb-8">Order ID: #SB{Math.floor(Math.random() * 100000)}</p>
-                      <button
-                        onClick={() => { setCurrentPage('home'); setCart([]); }}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-lg font-semibold"
-                      >
-                        Continue Shopping
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </main>
-
-              {/* Footer */}
-              <footer className="bg-gray-900 text-white mt-16">
-                <div className="container mx-auto px-4 py-12">
-                  <div className="grid md:grid-cols-4 gap-8">
-                    <div>
-                      <h3 className="font-bold text-lg mb-4">About Shohoz Bazar</h3>
-                      <p className="text-gray-400 text-sm mb-4">
-                        Your trusted online marketplace for quality products at the best prices.
-                      </p>
-                    </div>
-
-                    <div>
-                      <h3 className="font-bold text-lg mb-4">Quick Links</h3>
-                      <ul className="space-y-2 text-sm text-gray-400">
-                        <li className="hover:text-white cursor-pointer">About Us</li>
-                        <li className="hover:text-white cursor-pointer">Contact</li>
-                        <li className="hover:text-white cursor-pointer">FAQ</li>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h3 className="font-bold text-lg mb-4">Policies</h3>
-                      <ul className="space-y-2 text-sm text-gray-400">
-                        <li className="hover:text-white cursor-pointer">Return & Refund</li>
-                        <li className="hover:text-white cursor-pointer">Privacy Policy</li>
-                        <li className="hover:text-white cursor-pointer">Terms & Conditions</li>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h3 className="font-bold text-lg mb-4">Contact Us</h3>
-                      <ul className="space-y-2 text-sm text-gray-400">
-                        <li>📞 +880 1234-567890</li>
-                        <li>📧 support@shohozbazar.com</li>
-                        <li>📍 Dhaka, Bangladesh</li>
-                      </ul>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-                    <p>© 2025 Shohoz Bazar. All rights reserved.</p>
-                  </div>
+                <div className="flex items-center gap-3 mt-4">
+                  <span className="text-3xl font-extrabold text-emerald-700">{formatBDT(p.price)}</span>
+                  {p.oldPrice && <span className="text-gray-400 line-through">{formatBDT(p.oldPrice)}</span>}
+                  {p.discount > 0 && (
+                    <span className="bg-red-50 text-red-600 border border-red-200 px-3 py-1 rounded-full font-bold text-sm">
+                      -{p.discount}%
+                    </span>
+                  )}
                 </div>
-              </footer>
 
-              {/* Mobile Bottom Nav */}
-              <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg md:hidden z-50">
-                <div className="grid grid-cols-4 gap-1 p-2">
-                  {[
-                    { icon: '🏠', label: 'Home', page: 'home' },
-                    { icon: '🛍️', label: 'Shop', page: 'shop' },
-                    { icon: '❤️', label: 'Wishlist', page: 'wishlist', badge: wishlist.length },
-                    { icon: '🛒', label: 'Cart', page: 'cart', badge: cartCount },
-                  ].map((item, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setCurrentPage(item.page)}
-                      className="flex flex-col items-center gap-1 py-2 relative"
-                    >
-                      <span className="text-xl">{item.icon}</span>
-                      <span className="text-xs">{item.label}</span>
-                      {item.badge > 0 && (
-                        <span className="absolute top-1 right-2 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
-                          {item.badge}
-                        </span>
-                      )}
-                    </button>
-                  ))}
+                <div className="mt-4 text-sm text-gray-700">
+                  <div className="flex items-center gap-2">✅ <span>{t.inStock}: {p.stock}</span></div>
+                  <div className="flex items-center gap-2 mt-1">🚚 <span>{t.delivery}: {p.delivery}</span></div>
+                </div>
+
+                <div className="mt-6 flex gap-3">
+                  <button
+                    onClick={() => addToCart(p, 1)}
+                    className="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-extrabold"
+                  >
+                    {t.addToCart}
+                  </button>
+                  <button
+                    onClick={() => { addToCart(p, 1); setPage("checkout"); }}
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-extrabold"
+                  >
+                    {t.buyNow}
+                  </button>
+                </div>
+
+                <div className="mt-6 border-t pt-4">
+                  <h3 className="font-extrabold mb-2">Details</h3>
+                  <ul className="text-sm text-gray-700 list-disc pl-5 space-y-1">
+                    <li>Quality checked product</li>
+                    <li>7 days return policy (demo)</li>
+                    <li>Support via phone/WhatsApp (demo)</li>
+                  </ul>
                 </div>
               </div>
             </div>
-          );
+          </div>
+        );
+      };
 
-          // Product Card Component
-          function ProductCard({ product }) {
-            return (
-              <div className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow overflow-hidden group">
-                <div className="relative aspect-square bg-gray-100 flex items-center justify-center text-6xl cursor-pointer"
-                     onClick={() => { setSelectedProduct(product); setCurrentPage('product'); }}>
-                  {product.image}
-                  {product.discount > 0 && (
-                    <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-md text-xs font-bold">
-                      -{product.discount}%
+      const CartPage = () => (
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <h1 className="text-3xl font-extrabold">{t.cart} ({cartCount})</h1>
+            <button className="text-emerald-700 font-semibold hover:underline" onClick={() => setPage("shop")}>
+              {t.continueShopping} →
+            </button>
+          </div>
+
+          {cart.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="text-8xl mb-4">🛒</div>
+              <h2 className="text-2xl font-semibold mb-2">{t.emptyCartTitle}</h2>
+              <p className="text-gray-600 mb-6">{t.emptyCartSubtitle}</p>
+              <button
+                onClick={() => setPage("shop")}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-bold"
+              >
+                {t.startShopping}
+              </button>
+            </div>
+          ) : (
+            <div className="grid lg:grid-cols-3 gap-8 mt-6">
+              <div className="lg:col-span-2 space-y-4">
+                {cart.map(item => (
+                  <div key={item.id} className="bg-white rounded-2xl shadow-sm p-4 flex gap-4">
+                    <div className="w-24 h-24 bg-gray-100 rounded-xl flex items-center justify-center text-4xl flex-shrink-0 cursor-pointer"
+                      onClick={() => goProduct(item)}
+                    >
+                      {item.image}
                     </div>
-                  )}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); toggleWishlist(product); }}
-                    className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-100"
-                  >
-                    <span className={wishlist.find(item => item.id === product.id) ? 'text-red-500' : ''}>
-                      {wishlist.find(item => item.id === product.id) ? '❤️' : '🤍'}
-                    </span>
-                  </button>
-                </div>
-                
-                <div className="p-4">
-                  <h3 className="font-semibold text-sm mb-2 line-clamp-2 cursor-pointer hover:text-emerald-600"
-                      onClick={() => { setSelectedProduct(product); setCurrentPage('product'); }}>
-                    {product.name}
-                  </h3>
-                  
-                  <div className="flex items-center gap-1 mb-2">
-                    <span>⭐</span>
-                    <span className="text-sm font-semibold">{product.rating}</span>
-                    <span className="text-xs text-gray-500">({product.reviews})</span>
+
+                    <div className="flex-1">
+                      <h3 className="font-bold mb-1 cursor-pointer hover:text-emerald-700"
+                        onClick={() => goProduct(item)}
+                      >
+                        {item.name[lang]}
+                      </h3>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg font-extrabold text-emerald-700">{formatBDT(item.price)}</span>
+                        {item.oldPrice && (
+                          <span className="text-sm text-gray-400 line-through">{formatBDT(item.oldPrice)}</span>
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-600 mt-1">🚚 {t.delivery}: {item.delivery}</div>
+                    </div>
+
+                    <div className="flex flex-col items-end justify-between">
+                      <button onClick={() => removeFromCart(item.id)} className="text-red-500 hover:text-red-700 text-xl">✕</button>
+
+                      <div className="flex items-center gap-2 border rounded-xl">
+                        <button onClick={() => updateQuantity(item.id, -1)} className="p-2 hover:bg-gray-100 rounded-l-xl">−</button>
+                        <span className="px-4 font-extrabold">{item.quantity}</span>
+                        <button onClick={() => updateQuantity(item.id, 1)} className="p-2 hover:bg-gray-100 rounded-r-xl">+</button>
+                      </div>
+                    </div>
                   </div>
-                  
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-lg font-bold text-emerald-600">৳{product.price}</span>
-                    {product.oldPrice && (
-                      <span className="text-sm text-gray-400 line-through">৳{product.oldPrice}</span>
+                ))}
+              </div>
+
+              <div className="lg:col-span-1">
+                <div className="bg-white rounded-2xl shadow-sm p-6 sticky top-24">
+                  <h2 className="text-xl font-extrabold mb-4">Order Summary</h2>
+
+                  <div className="space-y-3 mb-4 text-sm">
+                    <div className="flex justify-between">
+                      <span>{t.subtotal}</span>
+                      <span className="font-bold">{formatBDT(cartTotal)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>{t.deliveryFee}</span>
+                      <span className="font-bold">{deliveryFee === 0 ? t.free : formatBDT(deliveryFee)}</span>
+                    </div>
+
+                    <div className="pt-2">
+                      <div className="flex gap-2">
+                        <input
+                          value={coupon}
+                          onChange={(e) => setCoupon(e.target.value)}
+                          placeholder={`${t.coupon} (SB10 / SHIPFREE)`}
+                          className="flex-1 border rounded-xl px-3 py-2"
+                        />
+                        <button onClick={applyCoupon} className="px-4 py-2 rounded-xl bg-gray-900 text-white font-bold">
+                          {t.apply}
+                        </button>
+                      </div>
+
+                      {appliedCoupon && appliedCoupon.code === "INVALID" && (
+                        <div className="mt-2 text-red-600 text-sm">Invalid coupon</div>
+                      )}
+                      {appliedCoupon && appliedCoupon.code !== "INVALID" && (
+                        <div className="mt-2 text-emerald-700 text-sm">
+                          Applied: <span className="font-bold">{appliedCoupon.code}</span> (−{formatBDT(couponDiscount)})
+                        </div>
+                      )}
+                    </div>
+
+                    {cartTotal < FREE_SHIP_THRESHOLD && (
+                      <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 text-sm">
+                        💰 {t.freeShipHint}: {formatBDT(FREE_SHIP_THRESHOLD - cartTotal)}
+                      </div>
                     )}
                   </div>
-                  
-                  <div className="text-xs text-gray-600 mb-3">
-                    🚚 Delivery: {product.delivery}
+
+                  <div className="border-t pt-4 mb-6">
+                    <div className="flex justify-between text-lg font-extrabold">
+                      <span>{t.total}</span>
+                      <span className="text-emerald-700">{formatBDT(grandTotal)}</span>
+                    </div>
                   </div>
-                  
-                  {product.stock < 20 && (
-                    <div className="text-xs text-red-600 mb-2">⚠️ Only {product.stock} left!</div>
-                  )}
-                  
+
                   <button
-                    onClick={() => addToCart(product)}
-                    className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg font-semibold transition-colors"
+                    onClick={() => setPage("checkout")}
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-extrabold text-lg transition mb-3"
                   >
-                    Add to Cart
+                    {t.proceedCheckout}
+                  </button>
+
+                  <button
+                    onClick={() => setPage("shop")}
+                    className="w-full border-2 border-gray-300 hover:border-emerald-600 py-3 rounded-xl font-bold"
+                  >
+                    {t.continueShopping}
                   </button>
                 </div>
               </div>
-            );
-          }
-        };
+            </div>
+          )}
+        </div>
+      );
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<ShohozBazar />);
-    </script>
+      const WishlistPage = () => (
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <h1 className="text-3xl font-extrabold">{t.wishlist} ({wishlist.length})</h1>
+            <button className="text-emerald-700 font-semibold hover:underline" onClick={() => setPage("shop")}>
+              {t.shop} →
+            </button>
+          </div>
+
+          {wishlist.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="text-8xl mb-4">❤️</div>
+              <h2 className="text-2xl font-semibold mb-2">Your wishlist is empty</h2>
+              <p className="text-gray-600 mb-6">Save your favorite items here!</p>
+              <button onClick={() => setPage("shop")}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-bold"
+              >
+                {t.startShopping}
+              </button>
+            </div>
+          ) : (
+            <div className="mt-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {wishlist.map(p => <ProductCard key={p.id} product={p} />)}
+            </div>
+          )}
+        </div>
+      );
+
+      const CheckoutPage = () => (
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
+            <h1 className="text-3xl font-extrabold">{t.checkout}</h1>
+            <button className="text-emerald-700 font-semibold hover:underline" onClick={() => setPage("cart")}>
+              ← {t.cart}
+            </button>
+          </div>
+
+          {cart.length === 0 ? (
+            <div className="bg-white rounded-2xl shadow-sm p-8 text-center">
+              <div className="text-6xl mb-4">🫥</div>
+              <h2 className="text-2xl font-extrabold mb-2">{t.emptyCartTitle}</h2>
+              <button className="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-xl font-bold"
+                onClick={() => setPage("shop")}
+              >
+                {t.startShopping}
+              </button>
+            </div>
+          ) : (
+            <div className="grid lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2 space-y-6">
+                <div className="bg-white rounded-2xl shadow-sm p-6">
+                  <h2 className="text-xl font-extrabold mb-4">1) {t.address}</h2>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <input className="border rounded-xl px-4 py-3" placeholder={t.name} value={checkoutData.name} onChange={(e)=>setField("name", e.target.value)} />
+                    <input className="border rounded-xl px-4 py-3" placeholder={t.phone} value={checkoutData.phone} onChange={(e)=>setField("phone", e.target.value)} />
+                    <input className="border rounded-xl px-4 py-3" placeholder={t.division} value={checkoutData.division} onChange={(e)=>setField("division", e.target.value)} />
+                    <input className="border rounded-xl px-4 py-3" placeholder={t.district} value={checkoutData.district} onChange={(e)=>setField("district", e.target.value)} />
+                    <input className="border rounded-xl px-4 py-3" placeholder={t.thana} value={checkoutData.thana} onChange={(e)=>setField("thana", e.target.value)} />
+                    <input className="border rounded-xl px-4 py-3" placeholder={t.area} value={checkoutData.area} onChange={(e)=>setField("area", e.target.value)} />
+                    <input className="border rounded-xl px-4 py-3 md:col-span-2" placeholder={t.roadHouse} value={checkoutData.roadHouse} onChange={(e)=>setField("roadHouse", e.target.value)} />
+                    <input className="border rounded-xl px-4 py-3 md:col-span-2" placeholder={t.landmark} value={checkoutData.landmark} onChange={(e)=>setField("landmark", e.target.value)} />
+                    <textarea className="border rounded-xl px-4 py-3 md:col-span-2" placeholder={t.note} value={checkoutData.note} onChange={(e)=>setField("note", e.target.value)} />
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-2xl shadow-sm p-6">
+                  <h2 className="text-xl font-extrabold mb-4">2) {t.payment}</h2>
+                  <div className="grid md:grid-cols-3 gap-3">
+                    {[
+                      { id: "cod", label: t.cod, badge: "💵" },
+                      { id: "bkash", label: t.payBkash, badge: "🟢" },
+                      { id: "nagad", label: t.payNagad, badge: "🟠" },
+                    ].map(m => (
+                      <button
+                        key={m.id}
+                        onClick={() => setField("paymentMethod", m.id)}
+                        className={`border rounded-2xl p-4 text-left hover:border-emerald-600 transition ${
+                          checkoutData.paymentMethod === m.id ? "border-emerald-600 bg-emerald-50" : "border-gray-200 bg-white"
+                        }`}
+                      >
+                        <div className="text-2xl">{m.badge}</div>
+                        <div className="mt-2 font-extrabold">{m.label}</div>
+                        <div className="text-xs text-gray-600 mt-1">
+                          {m.id === "cod" ? "Pay after delivery" : "Secure online payment (demo)"}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 text-sm text-gray-600">
+                    Demo note: In real build, bKash/Nagad will redirect to gateway and confirm via callback/webhook.
+                  </div>
+                </div>
+              </div>
+
+              <div className="lg:col-span-1">
+                <div className="bg-white rounded-2xl shadow-sm p-6 sticky top-24">
+                  <h2 className="text-xl font-extrabold mb-4">3) {t.reviewOrder}</h2>
+
+                  <div className="space-y-3 text-sm">
+                    {cart.map(i => (
+                      <div key={i.id} className="flex justify-between gap-3">
+                        <div className="flex-1">
+                          <div className="font-bold line-clamp-2">{i.name[lang]} × {i.quantity}</div>
+                          <div className="text-gray-500">{formatBDT(i.price)} each</div>
+                        </div>
+                        <div className="font-extrabold">{formatBDT(i.price * i.quantity)}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="border-t my-4"></div>
+
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between"><span>{t.subtotal}</span><span className="font-bold">{formatBDT(cartTotal)}</span></div>
+                    <div className="flex justify-between"><span>{t.deliveryFee}</span><span className="font-bold">{deliveryFee === 0 ? t.free : formatBDT(deliveryFee)}</span></div>
+                    {couponDiscount > 0 && (
+                      <div className="flex justify-between text-emerald-700"><span>Discount</span><span className="font-bold">−{formatBDT(couponDiscount)}</span></div>
+                    )}
+                  </div>
+
+                  <div className="border-t my-4"></div>
+
+                  <div className="flex justify-between text-lg font-extrabold mb-4">
+                    <span>{t.total}</span>
+                    <span className="text-emerald-700">{formatBDT(grandTotal)}</span>
+                  </div>
+
+                  <button
+                    disabled={!canPlaceOrder}
+                    onClick={placeOrder}
+                    className={`w-full py-3 rounded-xl font-extrabold text-lg transition ${
+                      canPlaceOrder ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                    }`}
+                  >
+                    {t.placeOrder}
+                  </button>
+
+                  {!canPlaceOrder && (
+                    <div className="mt-3 text-sm text-red-600">
+                      Please fill required address fields.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+
+      const TrackPage = () => {
+        const o = order;
+        return (
+          <div className="container mx-auto px-4 py-8">
+            <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
+              <h1 className="text-3xl font-extrabold">{t.trackOrder}</h1>
+              <button className="text-emerald-700 font-semibold hover:underline" onClick={() => setPage("home")}>
+                {t.backHome}
+              </button>
+            </div>
+
+            <div className="grid lg:grid-cols-2 gap-8">
+              <div className="bg-white rounded-2xl shadow-sm p-6">
+                <h2 className="text-xl font-extrabold mb-4">{t.track}</h2>
+                <div className="flex gap-2">
+                  <input
+                    className="flex-1 border rounded-xl px-4 py-3"
+                    placeholder={`${t.orderId} (e.g., ${o?.id || "SB123456"})`}
+                    value={trackInput}
+                    onChange={(e)=>setTrackInput(e.target.value)}
+                  />
+                  <button
+                    className="px-5 py-3 rounded-xl bg-gray-900 text-white font-extrabold"
+                    onClick={() => {
+                      // demo: if matches current order id, show it
+                      if (order && trackInput.trim().toUpperCase() === order.id.toUpperCase()) {
+                        alert("Order found (demo).");
+                      } else {
+                        alert("Demo: only current order ID will match in this static version.");
+                      }
+                    }}
+                  >
+                    {t.track}
+                  </button>
+                </div>
+
+                {o ? (
+                  <div className="mt-6">
+                    <div className="text-2xl font-extrabold mb-1">{t.orderPlaced}</div>
+                    <div className="text-gray-600">{t.orderPlacedMsg}</div>
+
+                    <div className="mt-4 p-4 rounded-xl bg-emerald-50 border border-emerald-100">
+                      <div className="font-extrabold">{t.orderId}: {o.id}</div>
+                      <div className="text-sm text-gray-600 mt-1">
+                        Payment: <span className="font-bold">{o.paymentMethod.toUpperCase()}</span> • Total: <span className="font-bold">{formatBDT(o.total)}</span>
+                      </div>
+                    </div>
+
+                    <button
+                      className="mt-4 w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-extrabold"
+                      onClick={bumpStatus}
+                      disabled={o.statusIndex >= statusSteps.length}
+                    >
+                      Demo: Advance Status
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mt-6 text-gray-600">
+                    No recent order in this demo.
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-white rounded-2xl shadow-sm p-6">
+                <h2 className="text-xl font-extrabold mb-4">{t.statusTimeline}</h2>
+                {!o ? (
+                  <div className="text-gray-600">Place an order to see tracking timeline.</div>
+                ) : (
+                  <div className="space-y-3">
+                    {statusSteps.map((s, idx) => {
+                      const stepNo = idx + 1;
+                      const done = stepNo <= o.statusIndex;
+                      return (
+                        <div key={s.key} className={`flex items-center gap-3 p-3 rounded-xl border ${done ? "border-emerald-200 bg-emerald-50" : "border-gray-200 bg-white"}`}>
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-extrabold ${done ? "bg-emerald-600 text-white" : "bg-gray-200 text-gray-700"}`}>
+                            {done ? "✓" : stepNo}
+                          </div>
+                          <div className="font-extrabold">{s.label}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      // Render page
+      const Page = () => {
+        if (page === "home") return <HomePage />;
+        if (page === "shop") return <ShopPage />;
+        if (page === "product") return <ProductPage />;
+        if (page === "cart") return <CartPage />;
+        if (page === "checkout") return <CheckoutPage />;
+        if (page === "wishlist") return <WishlistPage />;
+        if (page === "track") return <TrackPage />;
+        return <HomePage />;
+      };
+
+      return (
+        <div className="min-h-screen bg-gray-50">
+          <Header />
+          <main className="min-h-screen pb-20 md:pb-0">
+            <Page />
+          </main>
+          <Footer />
+          <MobileBottomNav />
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<ShohozBazarApp />);
+  </script>
 </body>
 </html>
